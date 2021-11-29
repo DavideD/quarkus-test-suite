@@ -63,7 +63,7 @@ public class GroundedEndpoint {
     @POST
     @Path("author/create/{name}")
     public Uni<Response> createStateless(String name) {
-        return factory.openStatelessSession().flatMap(session -> {
+        return factory.withStatelessSession( session -> {
             Author author = new Author();
             author.setName(name);
             return session.insert(author);
