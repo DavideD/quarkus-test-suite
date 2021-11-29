@@ -67,9 +67,12 @@ public class PanacheEndpoint {
     }
 
     @PUT
-    @Path("books/{author}/{name}")
-    public Uni<Response> createBook(Integer author, String name) {
-        return Book.create(author, name)
+    @Path("books/{authorId}/{title}")
+    public Uni<Response> createBook(Integer authorId, String title) {
+        // I only need a reference to the author, but I don't know how to get it with Panache.
+        // In Hibernate Reactive: Mutiny.Session#getReference
+        return authors.findById(authorId)
+                .chain(author -> Book.create(author, title))
                 .map(nothing -> Response.status(Response.Status.CREATED))
                 .onFailure().recoverWithItem(error -> Response.status(Response.Status.BAD_REQUEST).entity(error.getMessage()))
                 .map(Response.ResponseBuilder::build);
@@ -79,7 +82,7 @@ public class PanacheEndpoint {
     @Path("books/author/{name}")
     public Multi<String> search(String name) {
         return authors.findByName(name)
-                .flatMap(Author::getBooks)
+                .flatMap(Author::getBooksAsMulti)
                 .map(Book::getTitle);
     }
 
