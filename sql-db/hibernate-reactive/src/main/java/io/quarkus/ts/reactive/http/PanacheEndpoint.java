@@ -11,6 +11,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.hibernate.reactive.mutiny.Mutiny;
+
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.ts.reactive.database.Author;
 import io.quarkus.ts.reactive.database.AuthorRepository;
 import io.quarkus.ts.reactive.database.Book;
@@ -24,6 +27,9 @@ public class PanacheEndpoint {
 
     @Inject
     AuthorRepository authors;
+
+    @Inject
+    Mutiny.SessionFactory factory;
 
     @GET
     @Path("books")
@@ -73,6 +79,7 @@ public class PanacheEndpoint {
         // In Hibernate Reactive: Mutiny.Session#getReference
         return authors.findById(authorId)
                 .chain(author -> Book.create(author, title))
+                .invoke(book -> System.out.println("Book created: " + book))
                 .map(nothing -> Response.status(Response.Status.CREATED))
                 .onFailure().recoverWithItem(error -> Response.status(Response.Status.BAD_REQUEST).entity(error.getMessage()))
                 .map(Response.ResponseBuilder::build);
@@ -82,6 +89,7 @@ public class PanacheEndpoint {
     @Path("books/author/{name}")
     public Multi<String> search(String name) {
         return authors.findByName(name)
+                .invoke(author -> System.out.println("Author found: " + author))
                 .flatMap(Author::getBooksAsMulti)
                 .map(Book::getTitle);
     }
@@ -133,9 +141,7 @@ public class PanacheEndpoint {
                 .map(books -> books.isEmpty()
                         ? Response.status(Response.Status.NOT_FOUND)
                         : Response.ok(books))
-                .onFailure().recoverWithItem(error -> {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(error.getMessage());
-                })
+                .onFailure().recoverWithItem(error -> Response.status(Response.Status.BAD_REQUEST).entity(error.getMessage()))
                 .map(Response.ResponseBuilder::build);
     }
 }

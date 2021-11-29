@@ -150,20 +150,29 @@ public abstract class AbstractReactiveDatabaseIT {
     }
 
     @Test
-    public void testGeneratedId() {
+    public void testGeneratedId() throws InterruptedException {
         String author = given()
                 .when().get("/library/author/2")
                 .then()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().body().asString();
         Assertions.assertEquals("Vern", author);
-        Response creation = given().put("library/books/2/Around_the_World_in_Eighty_Days");
-        Assertions.assertEquals(HttpStatus.SC_CREATED, creation.statusCode());
-        String result = given()
-                .when().get("library/books/author/Vern")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .extract().body().asString();
+        given().put("library/books/2/Around_the_World_in_Eighty_Days")
+                .then().statusCode(HttpStatus.SC_CREATED);
+
+        String result = null;
+        do {
+            System.out.println("Waiting ...");
+            Thread.sleep( 2000L );
+            System.out.println("Select the author books ...");
+            result = given()
+                    .when().get( "library/books/author/Vern" )
+                    .then()
+                    .statusCode( HttpStatus.SC_OK )
+                    .extract().body().asString();
+            System.out.println("Result: " + result);
+        }
+        while ( !result.contains( "Around_the_World_in_Eighty_Days" ) );
         Assertions.assertEquals("[Around_the_World_in_Eighty_Days]", result);
     }
 

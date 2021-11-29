@@ -1,5 +1,6 @@
 package io.quarkus.ts.reactive.http;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,11 +21,8 @@ import io.smallrye.mutiny.Uni;
 @Consumes(MediaType.APPLICATION_JSON)
 public class GroundedEndpoint {
 
+    @Inject
     Mutiny.SessionFactory factory;
-
-    public GroundedEndpoint() {
-        factory = Arc.container().instance(Mutiny.SessionFactory.class).get(); //TODO for some reason, @Inject fails. Need to investigate
-    }
 
     @GET
     @Path("books/{id}")
@@ -68,8 +66,8 @@ public class GroundedEndpoint {
             author.setName(name);
             return session.insert(author);
         })
-                .map(ignored -> Response.status(Response.Status.CREATED))
-                .map(Response.ResponseBuilder::build);
+        .map(ignored -> Response.status(Response.Status.CREATED))
+        .map(Response.ResponseBuilder::build);
     }
 
     @POST
