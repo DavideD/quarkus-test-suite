@@ -75,19 +75,12 @@ public class GroundedEndpoint {
     @POST
     @Path("books/{authorName}/{name}")
     public Uni<Response> createBook(String authorName, String name) {
-        return factory.withTransaction((session, transaction) -> {
-            Author author = new Author();
-            author.setName(authorName);
-            return session.persist(author)
-                    .map(nothing -> session.getReference(author).getId())
-                    .map(authorId -> {
-                        Book book = new Book();
-                        book.setAuthor(authorId);
-                        book.setTitle(name);
-                        return book;
-                    })
-                    .flatMap(session::persist);
-        })
+        Author author = new Author();
+        author.setName(authorName);
+        Book book = new Book();
+        book.setAuthor(author);
+        book.setTitle(name);
+        return factory.withTransaction(session -> session.persistAll(author, book))
                 .map(nothing -> Response.status(Response.Status.CREATED))
                 .onFailure().recoverWithItem(error -> Response.status(Response.Status.BAD_REQUEST).entity(error.getMessage()))
                 .map(Response.ResponseBuilder::build);
