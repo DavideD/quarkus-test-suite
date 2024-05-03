@@ -21,7 +21,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Table(name = "authors")
 public class Author {
-    private static final int MAX_NAME_LENGTH = 10;
+    private static final int MAX_NAME_LENGTH = 1;
 
     @Id
     @Column(name = "id")
@@ -44,6 +44,14 @@ public class Author {
     public Author() {
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -52,11 +60,11 @@ public class Author {
         this.name = name;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
     public List<Book> getBooks() {
         return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
     }
 }

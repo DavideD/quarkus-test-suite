@@ -19,7 +19,7 @@ import io.smallrye.mutiny.Uni;
 @Table(name = "books")
 @NamedQuery(name = "find_by_title_prefix", query = "from Book where title like :prefix")
 public class Book extends PanacheEntityBase {
-    private static final int MAX_TITLE_LENGTH = 100;
+    private static final int MAX_TITLE_LENGTH = 1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,15 +57,27 @@ public class Book extends PanacheEntityBase {
         return book.persistAndFlush();
     }
 
-    public String getTitle() {
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public @NotNull @Size(max = MAX_TITLE_LENGTH) String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(@NotNull @Size(max = MAX_TITLE_LENGTH) String title) {
         this.title = title;
     }
 
-    public void setAuthor(Integer author) {
+    public @NotNull Integer getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(@NotNull Integer author) {
         this.author = author;
     }
 
